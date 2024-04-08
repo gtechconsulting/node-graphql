@@ -34,7 +34,7 @@ const auditLog = new GraphQLObjectType({
       type: new GraphQLNonNull(GraphQLString),
       description: '',
       resolve: (obj: AuditLog): string => {
-        return formatDate(new Date(obj.createdAt));
+        return formatDate(new Date(obj.created_at));
       },
     },
   }),

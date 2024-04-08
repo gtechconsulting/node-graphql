@@ -9,6 +9,13 @@ export default class AuditLogKnexRepository implements AuditLogRepository {
       .first();
   }
 
+  public async getLast(): Promise<AuditLog> {
+    return database.select()
+    .from('audit_log')
+    .orderBy('id', 'desc')
+    .first();
+  }
+
   public async getMany(ids: number[]): Promise<AuditLog[]> {
     return database.select()
       .from('audit_log')
@@ -52,8 +59,8 @@ export default class AuditLogKnexRepository implements AuditLogRepository {
       log: params.log,
     })
     .into('audit_log')
-    .then(ids => {
-      return this.get(ids[0]);
+    .then(result => {
+      return this.getLast();
     });
   }
 }

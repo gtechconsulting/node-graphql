@@ -2,6 +2,7 @@ import DataLoader from 'dataloader';
 
 interface RepositoriesContext {
   auditLog: AuditLogRepository;
+  user: UserRepository;
 }
 
 interface LoadersContext {
