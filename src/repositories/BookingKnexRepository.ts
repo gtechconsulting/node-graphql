@@ -2,90 +2,87 @@ import database from '../database';
 import {GraphQLError} from 'graphql';
 import throwCustomError, { ErrorTypes } from '../helpers/error-handler.helper';
 
-export default class UserKnexRepository implements UserRepository {
+export default class BookingKnexRepository implements BookingRepository {
 
-  public async get(id: number): Promise<User> {
+  public async get(id: number): Promise<Booking> {
     return database.select()
-      .from('user')
+      .from('booking')
       .where('id', id)
       .first();
   }
 
-  public async getLast(): Promise<User> {
+  public async getLast(): Promise<Booking> {
     return database.select()
-    .from('user')
+    .from('booking')
     .orderBy('id', 'desc')
     .first();
   }
 
-  public async getMany(ids: number[]): Promise<User[]> {
+  public async getMany(ids: number[]): Promise<Booking[]> {
     return database.select()
-      .from('user')
+      .from('booking')
       .whereIn('id', ids);
   }
 
-  public async find(params: UserRepository.FindParameters): Promise<User[]> {
+  public async find(params: BookingRepository.FindParameters): Promise<Booking[]> {
     const { first, after, query } = params;
 
     return database.select()
-      .from('user')
+      .from('booking')
       .modify((queryBuilder) => {
         if (typeof after !== 'undefined' && after !== null) {
           queryBuilder.offset(after);
         }
 
         if (typeof query !== 'undefined' && query !== null) {
-          queryBuilder.where('name', 'like', `%${query}%`);
+          queryBuilder.where('user_id', 'like', `%${query}%`);
         }
       })
       .limit(first);
   }
 
-  public async count(params: UserRepository.CountParameters): Promise<number> {
+  public async count(params: BookingRepository.CountParameters): Promise<number> {
     const { query } = params;
 
     return database.count({ count: '*' })
-      .from('user')
+      .from('booking')
       .modify((queryBuilder) => {
 
         if (typeof query !== 'undefined' && query !== null) {
-          queryBuilder.where('name', 'like', `%${query}%`);
+          queryBuilder.where('user_id', 'like', `%${query}%`);
         }
       })
       .first()
       .then(result => result.count);
   }
 
-  public async existUser(params: UserRepository.ExistParameters): Promise<boolean> {
-    const { username, email } = params;
+  public async existBooking(params: BookingRepository.ExistParameters): Promise<boolean> {
+    const { user_id, course_id } = params;
 
     return database.count({ count: '*' })
-      .from('user')
-      .where('username', username)
-      .orWhere('email', email)
+      .from('booking')
+      .where('user_id', user_id)
+      .orWhere('course_id', course_id)
       .first()
       .then(result => result.count > 0);
   }
 
-  public async create(params: UserRepository.CreateParameters): Promise<User> {
+  public async create(params: BookingRepository.CreateParameters): Promise<Booking> {
 
-    const exist = await this.existUser(params);
+    const exist = await this.existBooking(params);
 
     if(exist) {
       throwCustomError(
-          'User already registered with this username/email.',
+          'Booking already registered.',
           ErrorTypes.ALREADY_EXISTS
         );
     } else {
       return database.insert({
-        username: params.username,
-        name: params.name,
-        email: params.email,
-        password: params.password,
-        date_of_birth: params.date_of_birth,
-        gender: params.gender
+        user_id: params.user_id,
+        course_id: params.course_id,
+        payment_status: params.payment_status
       })
-      .into('user')
+      .into('booking')
       .then(result => {
         return this.getLast();
       });

@@ -2,33 +2,33 @@ import database from '../database';
 import {GraphQLError} from 'graphql';
 import throwCustomError, { ErrorTypes } from '../helpers/error-handler.helper';
 
-export default class UserKnexRepository implements UserRepository {
+export default class ClubKnexRepository implements ClubRepository {
 
-  public async get(id: number): Promise<User> {
+  public async get(id: number): Promise<Club> {
     return database.select()
-      .from('user')
+      .from('club')
       .where('id', id)
       .first();
   }
 
-  public async getLast(): Promise<User> {
+  public async getLast(): Promise<Club> {
     return database.select()
-    .from('user')
+    .from('club')
     .orderBy('id', 'desc')
     .first();
   }
 
-  public async getMany(ids: number[]): Promise<User[]> {
+  public async getMany(ids: number[]): Promise<Club[]> {
     return database.select()
-      .from('user')
+      .from('club')
       .whereIn('id', ids);
   }
 
-  public async find(params: UserRepository.FindParameters): Promise<User[]> {
+  public async find(params: ClubRepository.FindParameters): Promise<Club[]> {
     const { first, after, query } = params;
 
     return database.select()
-      .from('user')
+      .from('club')
       .modify((queryBuilder) => {
         if (typeof after !== 'undefined' && after !== null) {
           queryBuilder.offset(after);
@@ -41,11 +41,11 @@ export default class UserKnexRepository implements UserRepository {
       .limit(first);
   }
 
-  public async count(params: UserRepository.CountParameters): Promise<number> {
+  public async count(params: ClubRepository.CountParameters): Promise<number> {
     const { query } = params;
 
     return database.count({ count: '*' })
-      .from('user')
+      .from('club')
       .modify((queryBuilder) => {
 
         if (typeof query !== 'undefined' && query !== null) {
@@ -56,36 +56,43 @@ export default class UserKnexRepository implements UserRepository {
       .then(result => result.count);
   }
 
-  public async existUser(params: UserRepository.ExistParameters): Promise<boolean> {
-    const { username, email } = params;
+  public async existClub(params: ClubRepository.ExistParameters): Promise<boolean> {
+    const { name, email } = params;
 
     return database.count({ count: '*' })
-      .from('user')
-      .where('username', username)
+      .from('club')
+      .where('name', name)
       .orWhere('email', email)
       .first()
       .then(result => result.count > 0);
   }
 
-  public async create(params: UserRepository.CreateParameters): Promise<User> {
+  public async create(params: ClubRepository.CreateParameters): Promise<Club> {
 
-    const exist = await this.existUser(params);
+    const exist = await this.existClub(params);
 
     if(exist) {
       throwCustomError(
-          'User already registered with this username/email.',
+          'Club already registered with this name/email.',
           ErrorTypes.ALREADY_EXISTS
         );
     } else {
       return database.insert({
-        username: params.username,
         name: params.name,
+        street: params.street,
+        neighborhood: params.neighborhood,
+        number: params.number,
+        reference_point: params.reference_point,
+        city: params.city,
+        state: params.state,
+        postal_code: params.postal_code,
+        phone_number: params.phone_number,
+        fax: params.fax,
         email: params.email,
-        password: params.password,
-        date_of_birth: params.date_of_birth,
-        gender: params.gender
+        website: params.website,
+        social_media_url: params.social_media_url,
       })
-      .into('user')
+      .into('club')
       .then(result => {
         return this.getLast();
       });

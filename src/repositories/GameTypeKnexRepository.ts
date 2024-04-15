@@ -2,90 +2,85 @@ import database from '../database';
 import {GraphQLError} from 'graphql';
 import throwCustomError, { ErrorTypes } from '../helpers/error-handler.helper';
 
-export default class UserKnexRepository implements UserRepository {
+export default class GameTypeKnexRepository implements GameTypeRepository {
 
-  public async get(id: number): Promise<User> {
+  public async get(id: number): Promise<GameType> {
     return database.select()
-      .from('user')
+      .from('game_type')
       .where('id', id)
       .first();
   }
 
-  public async getLast(): Promise<User> {
+  public async getLast(): Promise<GameType> {
     return database.select()
-    .from('user')
+    .from('game_type')
     .orderBy('id', 'desc')
     .first();
   }
 
-  public async getMany(ids: number[]): Promise<User[]> {
+  public async getMany(ids: number[]): Promise<GameType[]> {
     return database.select()
-      .from('user')
+      .from('game_type')
       .whereIn('id', ids);
   }
 
-  public async find(params: UserRepository.FindParameters): Promise<User[]> {
+  public async find(params: GameTypeRepository.FindParameters): Promise<GameType[]> {
     const { first, after, query } = params;
 
     return database.select()
-      .from('user')
+      .from('game_type')
       .modify((queryBuilder) => {
         if (typeof after !== 'undefined' && after !== null) {
           queryBuilder.offset(after);
         }
 
         if (typeof query !== 'undefined' && query !== null) {
-          queryBuilder.where('name', 'like', `%${query}%`);
+          queryBuilder.where('description', 'like', `%${query}%`);
         }
       })
       .limit(first);
   }
 
-  public async count(params: UserRepository.CountParameters): Promise<number> {
+  public async count(params: GameTypeRepository.CountParameters): Promise<number> {
     const { query } = params;
 
     return database.count({ count: '*' })
-      .from('user')
+      .from('game_type')
       .modify((queryBuilder) => {
 
         if (typeof query !== 'undefined' && query !== null) {
-          queryBuilder.where('name', 'like', `%${query}%`);
+          queryBuilder.where('description', 'like', `%${query}%`);
         }
       })
       .first()
       .then(result => result.count);
   }
 
-  public async existUser(params: UserRepository.ExistParameters): Promise<boolean> {
-    const { username, email } = params;
+  public async existGameType(params: GameTypeRepository.ExistParameters): Promise<boolean> {
+    const { description } = params;
 
     return database.count({ count: '*' })
-      .from('user')
-      .where('username', username)
-      .orWhere('email', email)
+      .from('game_type')
+      .where('description', description)
       .first()
       .then(result => result.count > 0);
   }
 
-  public async create(params: UserRepository.CreateParameters): Promise<User> {
+  public async create(params: GameTypeRepository.CreateParameters): Promise<GameType> {
 
-    const exist = await this.existUser(params);
+    const exist = await this.existGameType(params);
 
     if(exist) {
       throwCustomError(
-          'User already registered with this username/email.',
+          'GameType already registered with this description.',
           ErrorTypes.ALREADY_EXISTS
         );
     } else {
       return database.insert({
-        username: params.username,
-        name: params.name,
-        email: params.email,
-        password: params.password,
-        date_of_birth: params.date_of_birth,
-        gender: params.gender
+        description: params.description,
+        active: params.active,
       })
-      .into('user')
+      .into('game_type')
       .then(result => {
         return this.getLast();
       });

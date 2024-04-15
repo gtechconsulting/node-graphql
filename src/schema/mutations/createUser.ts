@@ -12,7 +12,6 @@ const createUser = {
   },
   resolve: (_, { input }, context: Context): Promise<any> => {
 
-    console.log('input --->',input);
     return context.repositories.user.create(input)
   },
 };

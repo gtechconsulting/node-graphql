@@ -2,33 +2,33 @@ import database from '../database';
 import {GraphQLError} from 'graphql';
 import throwCustomError, { ErrorTypes } from '../helpers/error-handler.helper';
 
-export default class UserKnexRepository implements UserRepository {
+export default class CourseKnexRepository implements CourseRepository {
 
-  public async get(id: number): Promise<User> {
+  public async get(id: number): Promise<Course> {
     return database.select()
-      .from('user')
+      .from('course')
       .where('id', id)
       .first();
   }
 
-  public async getLast(): Promise<User> {
+  public async getLast(): Promise<Course> {
     return database.select()
-    .from('user')
+    .from('course')
     .orderBy('id', 'desc')
     .first();
   }
 
-  public async getMany(ids: number[]): Promise<User[]> {
+  public async getMany(ids: number[]): Promise<Course[]> {
     return database.select()
-      .from('user')
+      .from('course')
       .whereIn('id', ids);
   }
 
-  public async find(params: UserRepository.FindParameters): Promise<User[]> {
+  public async find(params: CourseRepository.FindParameters): Promise<Course[]> {
     const { first, after, query } = params;
 
     return database.select()
-      .from('user')
+      .from('course')
       .modify((queryBuilder) => {
         if (typeof after !== 'undefined' && after !== null) {
           queryBuilder.offset(after);
@@ -41,11 +41,11 @@ export default class UserKnexRepository implements UserRepository {
       .limit(first);
   }
 
-  public async count(params: UserRepository.CountParameters): Promise<number> {
+  public async count(params: CourseRepository.CountParameters): Promise<number> {
     const { query } = params;
 
     return database.count({ count: '*' })
-      .from('user')
+      .from('course')
       .modify((queryBuilder) => {
 
         if (typeof query !== 'undefined' && query !== null) {
@@ -56,36 +56,35 @@ export default class UserKnexRepository implements UserRepository {
       .then(result => result.count);
   }
 
-  public async existUser(params: UserRepository.ExistParameters): Promise<boolean> {
-    const { username, email } = params;
+  public async existCourse(params: CourseRepository.ExistParameters): Promise<boolean> {
+    const { club_id, course_type } = params;
 
     return database.count({ count: '*' })
-      .from('user')
-      .where('username', username)
-      .orWhere('email', email)
+      .from('course')
+      .where('club_id', club_id)
+      .orWhere('course_type', course_type)
       .first()
       .then(result => result.count > 0);
   }
 
-  public async create(params: UserRepository.CreateParameters): Promise<User> {
+  public async create(params: CourseRepository.CreateParameters): Promise<Course> {
 
-    const exist = await this.existUser(params);
+    const exist = await this.existCourse(params);
 
     if(exist) {
       throwCustomError(
-          'User already registered with this username/email.',
+          'Course already registered.',
           ErrorTypes.ALREADY_EXISTS
         );
     } else {
       return database.insert({
-        username: params.username,
         name: params.name,
-        email: params.email,
-        password: params.password,
-        date_of_birth: params.date_of_birth,
-        gender: params.gender
+        description: params.description,
+        club_id: params.club_id,
+        course_type: params.course_type,
+        active: params.active
       })
-      .into('user')
+      .into('course')
       .then(result => {
         return this.getLast();
       });

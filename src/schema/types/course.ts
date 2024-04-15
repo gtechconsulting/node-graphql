@@ -6,80 +6,73 @@ import {
 } from 'graphql';
 import { formatDate } from '../../utils/functions';
 
-const user = new GraphQLObjectType({
-  name: 'user',
+const obj = new GraphQLObjectType({
+  name: 'course',
   fields: () => ({
     id: {
       type: new GraphQLNonNull(GraphQLID),
-      description: 'Globally unique ID of the user',
-      resolve: (obj: User): string => {
-        return Buffer.from(`user-${obj.id}`).toString('base64');
+      description: 'Globally unique ID of the game result',
+      resolve: (obj: Course): string => {
+        return Buffer.from(`game-result-${obj.id}`).toString('base64');
       },
     },
     _id: {
       type: new GraphQLNonNull(GraphQLID),
-      description: 'Database ID of the user',
-      resolve: (obj: User): number => {
+      description: 'Database ID of the game result',
+      resolve: (obj: Course): number => {
         return obj.id;
-      },
-    },
-    username: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: '',
-      resolve: (obj: User): string => {
-        return obj.username;
-      },
-    },
-    email: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: '',
-      resolve: (obj: User): string => {
-        return obj.email;
-      },
-    },
-    password: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: '',
-      resolve: (obj: User): string => {
-        return obj.password;
       },
     },
     name: {
       type: new GraphQLNonNull(GraphQLString),
       description: '',
-      resolve: (obj: User): string => {
+      resolve: (obj: Course): string => {
         return obj.name;
       },
     },
-    dateOfBirth: {
+    description: {
       type: new GraphQLNonNull(GraphQLString),
       description: '',
-      resolve: (obj: User): string => {
-        return obj.date_of_birth;
+      resolve: (obj: Course): string => {
+        return obj.description;
       },
     },
-    gender: {
+    club_id: {
       type: new GraphQLNonNull(GraphQLString),
       description: '',
-      resolve: (obj: User): string => {
-        return obj.gender;
+      resolve: (obj: Course): number => {
+        return obj.club_id;
+      },
+    },
+    course_type: {
+      type: new GraphQLNonNull(GraphQLString),
+      description: '',
+      resolve: (obj: Course): string => {
+        return obj.course_type;
+      },
+    },
+    active: {
+      type: new GraphQLNonNull(GraphQLString),
+      description: '',
+      resolve: (obj: Course): boolean => {
+        return obj.active;
       },
     },
     createdAt: {
       type: new GraphQLNonNull(GraphQLString),
       description: '',
-      resolve: (obj: User): string => {
+      resolve: (obj: Course): string => {
         return formatDate(new Date(obj.created_at));
       },
     },
     updatedAt: {
       type: new GraphQLNonNull(GraphQLString),
       description: '',
-      resolve: (obj: User): string => {
+      resolve: (obj: Course): string => {
         return formatDate(new Date(obj.updated_at));
       },
     },
   }),
 });
 
-export default user;
+export default obj;
